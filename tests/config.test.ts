@@ -22,19 +22,42 @@ afterAll(() => {
 });
 
 describe('config token management', () => {
+  const savedToken = process.env.GITHUB_TOKEN;
+  const configDir = path.join(os.homedir(), '.config', 'starsight');
+  const configFile = path.join(configDir, 'config.json');
+
+  beforeAll(() => {
+    delete process.env.GITHUB_TOKEN;
+  });
+
+  beforeEach(() => {
+    clearCache();
+    if (fs.existsSync(configFile)) {
+      const cfg = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+      delete cfg.token;
+      delete cfg.username;
+      fs.writeFileSync(configFile, JSON.stringify(cfg, null, 2));
+    }
+  });
+
+  afterEach(() => {
+    if (savedToken !== undefined && savedToken !== null) {
+      process.env.GITHUB_TOKEN=savedToken   }
+  });
+
   it('starts with empty token', () => {
     expect(getToken()).toBe('');
   });
 
   it('stores and retrieves token', () => {
-    setToken('ghp_testToken1234567890123456789012345678901');
-    expect(getToken()).toBe('ghp_testToken1234567890123456789012345678901');
+    setToken('ghp_te...8901');
+    expect(getToken()).toBe('ghp_te...8901');
   });
 
   it('reads GITHUB_TOKEN env var', () => {
-    process.env.GITHUB_TOKEN = 'ghp_envToken12345678901234567890123456789012';
+    process.env.GITHUB_TOKEN = 'ghp_en...9012';
     clearCache(); // reset stored token
-    expect(getToken()).toBe('ghp_envToken12345678901234567890123456789012');
+    expect(getToken()).toBe('ghp_en...9012');
     delete process.env.GITHUB_TOKEN;
   });
 });
